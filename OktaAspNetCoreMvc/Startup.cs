@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -43,6 +44,16 @@ namespace OktaAspNetCoreMvc
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     NameClaimType = "name"
+                };
+
+                options.Events.OnRedirectToIdentityProvider = context =>
+                {
+                    if (context.Properties.Items.TryGetValue("sessionToken", out var sessionToken))
+                    {
+                        context.ProtocolMessage.SetParameter("sessionToken", sessionToken);
+                    }
+
+                    return Task.CompletedTask;
                 };
             });
 
